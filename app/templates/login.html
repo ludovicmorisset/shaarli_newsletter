@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Connexion | Shaarli Newsletter</title>
+<style>
+  :root {
+    color-scheme: light;
+    --primary: #006b5e;
+    --primary-deep: #004d45;
+    --surface: #ffffff;
+    --background: #f3f7f5;
+    --ink: #18201e;
+    --muted: #59635f;
+    --outline: #737d78;
+    --error: #ba1a1a;
+    font-family: "DM Sans", "Avenir Next", Avenir, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { min-height: 100vh; margin: 0; display: grid; grid-template-columns: minmax(300px, 0.9fr) 1.1fr; background: var(--background); color: var(--ink); }
+  .brand-panel {
+    position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden; min-height: 100vh; padding: clamp(32px, 6vw, 80px); color: white;
+    background-color: #07574d;
+    background-image: linear-gradient(145deg, #07574d 0%, #063d38 66%, #092f2d 100%);
+  }
+  .brand-panel::before {
+    position: absolute; z-index: -1; inset: 0; content: ""; opacity: .17;
+    background-image: linear-gradient(90deg, #ffffff20 1px, transparent 1px), linear-gradient(#ffffff20 1px, transparent 1px);
+    background-size: 34px 34px; mask-image: linear-gradient(135deg, black, transparent 75%);
+  }
+  .brand { display: flex; align-items: center; gap: 13px; font-size: 17px; font-weight: 700; }
+  .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #ffffff66; border-radius: 14px; font: 24px Georgia, serif; }
+  .brand-copy { max-width: 440px; padding: 48px 0; animation: arrive .5s ease both; }
+  .eyebrow { margin: 0 0 18px; color: #a9e3d2; font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+  .brand-copy h1 { max-width: 440px; margin: 0; font-size: clamp(34px, 4vw, 56px); line-height: 1.08; font-weight: 700; }
+  .brand-copy p { max-width: 390px; margin: 20px 0 0; color: #d1e8e1; font-size: 16px; line-height: 1.7; }
+  .panel-footer { color: #b6d2ca; font-size: 12px; }
+  .login-side { display: grid; place-items: center; padding: 36px 24px; }
+  .login-card { width: min(100%, 440px); padding: 42px; background: var(--surface); border: 1px solid #d4ddd8; border-radius: 8px; box-shadow: 0 10px 32px #18362d0b; animation: arrive .45s ease .06s both; }
+  .mobile-brand { display: none; }
+  h2 { margin: 0; font-size: 27px; line-height: 1.25; }
+  .intro { margin: 8px 0 28px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  label { display: block; margin: 18px 0 7px; color: #303a36; font-size: 13px; font-weight: 700; }
+  input { width: 100%; min-height: 50px; padding: 0 14px; border: 1px solid var(--outline); border-radius: 4px; outline: 0; background: white; color: var(--ink); font: inherit; font-size: 15px; transition: border-color .15s, box-shadow .15s; }
+  input:focus { border: 2px solid var(--primary); padding-left: 13px; box-shadow: 0 0 0 3px #006b5e1a; }
+  .error { margin: 18px 0 0; padding: 11px 13px; border-radius: 4px; background: #fff0ef; color: var(--error); font-size: 13px; line-height: 1.45; }
+  button { width: 100%; min-height: 48px; margin-top: 26px; border: 0; border-radius: 24px; background: var(--primary); color: white; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s, box-shadow .15s; }
+  button:hover { background: var(--primary-deep); box-shadow: 0 3px 8px #004d4533; }
+  .secure-note { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 22px 0 0; color: var(--muted); font-size: 12px; }
+  @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 760px) {
+    body { display: block; background: var(--background); }
+    .brand-panel { display: none; }
+    .login-side { min-height: 100vh; align-content: center; padding: 28px 18px; }
+    .login-card { padding: 30px 24px; }
+    .mobile-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; color: var(--primary); font-size: 14px; font-weight: 700; }
+    .mobile-brand .brand-mark { width: 36px; height: 36px; border-color: #aabbb4; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+  <aside class="brand-panel" aria-label="Shaarli Newsletter">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">S</span><span>Shaarli Newsletter</span></div>
+    <div class="brand-copy">
+      <p class="eyebrow">Votre veille, chaque matin</p>
+      <h1>Les liens d’hier. L’essentiel aujourd’hui.</h1>
+      <p>Retrouvez chaque jour les liens partagés sur votre instance Shaarli, réunis dans une newsletter claire et personnalisée.</p>
+    </div>
+    <div class="panel-footer">Un espace privé pour configurer votre newsletter.</div>
+  </aside>
+  <main class="login-side">
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="mobile-brand"><span class="brand-mark" aria-hidden="true">S</span><span>Shaarli Newsletter</span></div>
+      <h2 id="login-title">Connexion</h2>
+      <p class="intro">Connectez-vous pour accéder à votre espace d’administration.</p>
+      <form method="post" action="/login">
+        <label for="username">Identifiant</label>
+        <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        {% if error %}<p class="error" role="alert">Identifiant ou mot de passe incorrect. Veuillez réessayer.</p>{% endif %}
+        <button type="submit">Se connecter</button>
+      </form>
+      <p class="secure-note"><span aria-hidden="true">●</span> Accès réservé à l’administration</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -2,12 +2,12 @@ import os
 import secrets
 from datetime import datetime
 
-from fastapi import FastAPI, Request, Depends, HTTPException, Form
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from jinja2 import Environment, FileSystemLoader
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from starlette.middleware.sessions import SessionMiddleware
 
 from settings import Settings, load_settings, save_settings, load_last_run, save_last_run
 from themes import THEMES
@@ -16,22 +16,37 @@ from mailer import send_email
 from weather import geocode_city
 
 app = FastAPI(title="Shaarli Newsletter")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.environ.get("SESSION_SECRET") or secrets.token_urlsafe(32),
+    max_age=60 * 60 * 24 * 14,
+    same_site="lax",
+    https_only=os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true",
+)
 env = Environment(loader=FileSystemLoader("templates"))
-security = HTTPBasic()
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 current_job_id = "newsletter_job"
 
 
-def check_auth(credentials: HTTPBasicCredentials = Depends(security)):
-    admin_user = os.environ.get("ADMIN_USER", "admin")
-    admin_password = os.environ.get("ADMIN_PASSWORD", "admin")
-    correct_user = secrets.compare_digest(credentials.username, admin_user)
-    correct_pass = secrets.compare_digest(credentials.password, admin_password)
-    if not (correct_user and correct_pass):
-        raise HTTPException(status_code=401, detail="Unauthorized", headers={"WWW-Authenticate": "Basic"})
+def check_auth(request: Request):
+    if not request.session.get("authenticated"):
+        return False
     return True
+
+
+def valid_credentials(username: str, password: str) -> bool:
+    admin_user = os.environ.get("ADMIN_USER", "")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "")
+    return bool(
+        admin_user
+        and admin_password
+        and username
+        and password
+        and secrets.compare_digest(username, admin_user)
+        and secrets.compare_digest(password, admin_password)
+    )
 
 
 def run_newsletter_job():
@@ -75,8 +90,31 @@ def root():
     return RedirectResponse("/admin")
 
 
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    if check_auth(request):
+        return RedirectResponse("/admin", status_code=303)
+    return env.get_template("login.html").render(error=False)
+
+
+@app.post("/login", response_class=HTMLResponse)
+def login(request: Request, username: str = Form(""), password: str = Form("")):
+    if not valid_credentials(username, password):
+        return HTMLResponse(env.get_template("login.html").render(error=True), status_code=401)
+    request.session["authenticated"] = True
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.post("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/login", status_code=303)
+
+
 @app.get("/admin", response_class=HTMLResponse)
-def admin_page(auth: bool = Depends(check_auth)):
+def admin_page(request: Request):
+    if not check_auth(request):
+        return RedirectResponse("/login", status_code=303)
     settings = load_settings()
     last_run = load_last_run()
     job = scheduler.get_job(current_job_id)
@@ -94,7 +132,6 @@ def admin_page(auth: bool = Depends(check_auth)):
 @app.post("/admin", response_class=HTMLResponse)
 def admin_save(
     request: Request,
-    auth: bool = Depends(check_auth),
     shaarli_url: str = Form(""),
     shaarli_api_secret: str = Form(""),
     exclude_tags: str = Form(""),
@@ -115,6 +152,8 @@ def admin_save(
     weather_enabled: bool = Form(False),
     weather_city: str = Form(""),
 ):
+    if not check_auth(request):
+        return RedirectResponse("/login", status_code=303)
     old = load_settings()
 
     weather_label = old.weather_label
@@ -162,13 +201,17 @@ def admin_save(
 
 
 @app.post("/admin/send", response_class=HTMLResponse)
-def admin_send_now(auth: bool = Depends(check_auth)):
+def admin_send_now(request: Request):
+    if not check_auth(request):
+        return RedirectResponse("/login", status_code=303)
     run_newsletter_job()
     return RedirectResponse("/admin", status_code=303)
 
 
 @app.get("/admin/preview", response_class=HTMLResponse)
-def admin_preview(theme: str = "journal", auth: bool = Depends(check_auth)):
+def admin_preview(request: Request, theme: str = "journal"):
+    if not check_auth(request):
+        return RedirectResponse("/login", status_code=303)
     settings = load_settings()
     settings.theme = theme
     html, _, _ = build_newsletter_html(settings)

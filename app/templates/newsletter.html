@@ -2,22 +2,25 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ma veille du {{ date.strftime('%d/%m/%Y') }}</title>
 </head>
 <body style="margin:0; padding:0; background:{{ theme.bg }}; font-family:{{ theme.font }};">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{ theme.bg }}; padding:24px 0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{ theme.bg }}; padding:32px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0"
-               style="background:{{ theme.card_bg }}; border-radius:10px; overflow:hidden;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%; max-width:600px; background:{{ theme.card_bg }}; border-radius:8px; overflow:hidden;">
 
           <tr>
-            <td style="padding:28px 32px; border-bottom:3px solid {{ theme.accent }};">
-              <h1 style="margin:0; color:{{ theme.accent }}; font-family:{{ theme.font }}; font-size:24px;">
-                📰 Ma veille du {{ date.strftime('%d/%m/%Y') }}
+            <td style="padding:30px 32px 26px; border-top:4px solid {{ theme.accent }}; border-bottom:1px solid {{ theme.bg }};">
+              <p style="margin:0 0 10px; color:{{ theme.muted }}; font-size:11px; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">
+                Shaarli Newsletter
+              </p>
+              <h1 style="margin:0; color:{{ theme.accent }}; font-family:{{ theme.font }}; font-size:26px; line-height:1.25;">
+                Ma veille du {{ date.strftime('%d/%m/%Y') }}
               </h1>
               {% if weather %}
-              <p style="margin:8px 0 0; color:{{ theme.muted }}; font-size:14px;">
+              <p style="margin:12px 0 0; color:{{ theme.muted }}; font-size:14px; line-height:1.5;">
                 {{ weather.icon }} {{ weather_label }} — {{ weather.tmin }}°C / {{ weather.tmax }}°C aujourd'hui
               </p>
               {% endif %}
@@ -25,35 +28,35 @@
           </tr>
 
           <tr>
-            <td style="padding:24px 32px;">
+            <td style="padding:26px 32px 12px;">
               {% if links %}
                 {% for link in links %}
-                <div style="margin-bottom:22px; padding-bottom:18px; {% if not loop.last %}border-bottom:1px solid #e5e5e5;{% endif %}">
-                  <a href="{{ link.url }}" style="color:{{ theme.accent }}; font-size:17px; font-weight:bold; text-decoration:none;">
+                <div style="margin-bottom:18px; padding:0 0 18px; {% if not loop.last %}border-bottom:1px solid {{ theme.bg }};{% endif %}">
+                  <a href="{{ link.url }}" style="color:{{ theme.accent }}; font-size:17px; font-weight:bold; line-height:1.45; text-decoration:none;">
                     {{ link.title or link.url }}
                   </a>
                   {% if show_descriptions and link.description %}
-                  <p style="color:{{ theme.text }}; font-size:14px; margin:8px 0 0; line-height:1.5;">
+                  <p style="color:{{ theme.text }}; font-size:14px; margin:7px 0 0; line-height:1.6;">
                     {{ link.description }}
                   </p>
                   {% endif %}
                   {% if link.tags %}
                   <p style="margin:8px 0 0;">
                     {% for tag in link.tags %}
-                    <span style="display:inline-block; background:{{ theme.bg }}; color:{{ theme.muted }}; font-size:12px; padding:3px 8px; border-radius:12px; margin-right:6px;">#{{ tag }}</span>
+                    <span style="display:inline-block; background:{{ theme.bg }}; color:{{ theme.muted }}; font-size:11px; padding:4px 8px; border-radius:4px; margin:5px 5px 0 0;">#{{ tag }}</span>
                     {% endfor %}
                   </p>
                   {% endif %}
                 </div>
                 {% endfor %}
               {% else %}
-                <p style="color:{{ theme.muted }};">Aucun article partagé hier.</p>
+                <p style="margin:0; color:{{ theme.muted }}; font-size:14px; line-height:1.6;">Aucun article partagé hier.</p>
               {% endif %}
             </td>
           </tr>
 
           <tr>
-            <td style="padding:20px 32px; background:{{ theme.bg }}; color:{{ theme.muted }}; font-size:12px;">
+            <td style="padding:18px 32px; background:{{ theme.bg }}; color:{{ theme.muted }}; font-size:12px; line-height:1.5;">
               Généré automatiquement depuis votre instance Shaarli.
             </td>
           </tr>
