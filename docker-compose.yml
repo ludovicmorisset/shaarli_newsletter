@@ -1,0 +1,10 @@
+services:
+  shaarli-newsletter:
+    build: .
+    container_name: shaarli-newsletter
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8000"
+    env_file: .env
+    volumes:
+      - ./data:/data

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Administration — Shaarli Newsletter</title>
+<style>
+  :root { --accent: #2563eb; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background:#f3f4f6; margin:0; color:#111827; }
+  header { background:#111827; color:white; padding:16px 32px; }
+  header h1 { margin:0; font-size:20px; }
+  .layout { display:grid; grid-template-columns: 1fr 380px; gap:24px; padding:24px; max-width:1400px; margin:0 auto; }
+  .card { background:white; border-radius:10px; padding:20px 24px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .card h2 { margin-top:0; font-size:16px; color:#374151; border-bottom:1px solid #e5e7eb; padding-bottom:8px; }
+  label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; margin-top:12px; }
+  input[type=text], input[type=password], input[type=number], input[type=time] {
+    width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:14px;
+  }
+  .checkbox { display:flex; align-items:center; gap:8px; margin-top:12px; }
+  .checkbox input { width:auto; }
+  .themes { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-top:12px; }
+  .theme-option { border:2px solid transparent; border-radius:8px; padding:10px; cursor:pointer; }
+  .theme-option.selected { border-color: var(--accent); }
+  .theme-option input { display:none; }
+  .swatch { height:28px; border-radius:4px; margin-bottom:6px; }
+  .actions { display:flex; gap:10px; margin-top:20px; }
+  button, .btn { padding:10px 18px; border-radius:6px; border:none; background:var(--accent); color:white; font-weight:600; cursor:pointer; font-size:14px; }
+  .btn.secondary { background:#6b7280; }
+  iframe { width:100%; height:500px; border:1px solid #e5e7eb; border-radius:6px; }
+  .hint { font-size:12px; color:#6b7280; margin-top:6px; }
+  .status { font-size:14px; }
+  .status .ok { color:#059669; }
+  .status .err { color:#dc2626; }
+  aside .sticky { position: sticky; top: 20px; }
+</style>
+</head>
+<body>
+<header><h1>⚙️ Administration — Shaarli Newsletter</h1></header>
+
+<div class="layout">
+  <form method="post" action="/admin">
+  <main>
+
+    <div class="card">
+      <h2>🔗 Connexion Shaarli</h2>
+      <label>URL de votre instance Shaarli</label>
+      <input type="text" name="shaarli_url" value="{{ s.shaarli_url }}" placeholder="https://liens.mondomaine.fr">
+
+      <label>Secret API (Réglages > Configuration > API REST)</label>
+      <input type="text" name="shaarli_api_secret" value="{{ s.shaarli_api_secret }}">
+
+      <label>Tags à exclure (séparés par des virgules)</label>
+      <input type="text" name="exclude_tags" value="{{ s.exclude_tags }}" placeholder="privé, brouillon">
+
+      <div class="checkbox">
+        <input type="checkbox" id="show_descriptions" name="show_descriptions" {% if s.show_descriptions %}checked{% endif %}>
+        <label for="show_descriptions" style="margin:0;">Afficher les descriptions des liens</label>
+      </div>
+      <div class="checkbox">
+        <input type="checkbox" id="send_if_empty" name="send_if_empty" {% if s.send_if_empty %}checked{% endif %}>
+        <label for="send_if_empty" style="margin:0;">Envoyer même si aucun lien la veille</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📧 Envoi (SMTP)</h2>
+      <label>Serveur SMTP</label>
+      <input type="text" name="smtp_host" value="{{ s.smtp_host }}">
+
+      <label>Port</label>
+      <input type="number" name="smtp_port" value="{{ s.smtp_port }}">
+
+      <label>Utilisateur SMTP</label>
+      <input type="text" name="smtp_user" value="{{ s.smtp_user }}">
+
+      <label>Mot de passe SMTP (laisser vide pour ne pas changer)</label>
+      <input type="password" name="smtp_password" placeholder="••••••••">
+
+      <div class="checkbox">
+        <input type="checkbox" id="smtp_use_tls" name="smtp_use_tls" {% if s.smtp_use_tls %}checked{% endif %}>
+        <label for="smtp_use_tls" style="margin:0;">Utiliser STARTTLS</label>
+      </div>
+
+      <label>Adresse expéditrice</label>
+      <input type="text" name="mail_from" value="{{ s.mail_from }}">
+
+      <label>Adresse(s) destinataire(s)</label>
+      <input type="text" name="mail_to" value="{{ s.mail_to }}">
+
+      <label>Préfixe du sujet</label>
+      <input type="text" name="subject_prefix" value="{{ s.subject_prefix }}">
+    </div>
+
+    <div class="card">
+      <h2>⏰ Planification</h2>
+      <div class="checkbox">
+        <input type="checkbox" id="enabled" name="enabled" {% if s.enabled %}checked{% endif %}>
+        <label for="enabled" style="margin:0;">Envoi automatique activé</label>
+      </div>
+      <label>Heure d'envoi</label>
+      <input type="time" name="send_time" value="{{ s.send_time }}">
+
+      <label>Fuseau horaire</label>
+      <input type="text" name="timezone" value="{{ s.timezone }}">
+    </div>
+
+    <div class="card">
+      <h2>🌤️ Météo</h2>
+      <div class="checkbox">
+        <input type="checkbox" id="weather_enabled" name="weather_enabled" {% if s.weather_enabled %}checked{% endif %}>
+        <label for="weather_enabled" style="margin:0;">Afficher la météo dans la newsletter</label>
+      </div>
+      <label>Ville</label>
+      <input type="text" name="weather_city" value="{{ s.weather_city }}" placeholder="Paris">
+      <div class="hint">
+        {% if s.weather_label %}Ville détectée : <strong>{{ s.weather_label }}</strong> ({{ '%.3f'|format(s.weather_lat) }}, {{ '%.3f'|format(s.weather_lon) }}){% else %}Données Open-Meteo (gratuit, sans clé). La ville sera géocodée à l'enregistrement.{% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎨 Style de la newsletter</h2>
+      <div class="themes">
+        {% for key, t in themes.items() %}
+        <label class="theme-option {% if s.theme == key %}selected{% endif %}" onclick="selectTheme('{{ key }}')">
+          <input type="radio" name="theme" value="{{ key }}" {% if s.theme == key %}checked{% endif %}>
+          <div class="swatch" style="background:{{ t.accent }};"></div>
+          <div style="font-family:{{ t.font }}; font-size:14px;">{{ t.label }}</div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit">💾 Enregistrer</button>
+      <button type="button" class="btn secondary" onclick="refreshPreview()">👁️ Rafraîchir l'aperçu</button>
+      <button type="submit" formaction="/admin/send" formmethod="post" class="btn secondary"
+              onclick="return confirm('Envoyer la newsletter maintenant ?')">📨 Envoyer maintenant</button>
+    </div>
+
+  </main>
+  </form>
+
+  <aside>
+    <div class="sticky">
+      <div class="card">
+        <h2>État</h2>
+        <div class="status">
+          ⏰ Prochain envoi : <strong>{{ next_run }}</strong><br>
+          {% if last_run %}
+            🕓 Dernière exécution : {{ last_run.at|replace('T',' ') }}<br>
+            <span class="{{ 'ok' if last_run.ok else 'err' }}">{{ '✅' if last_run.ok else '❌' }} {{ last_run.message }}</span>
+          {% else %}
+            Aucune exécution pour l'instant.
+          {% endif %}
+        </div>
+      </div>
+      <div class="card">
+        <h2>Aperçu</h2>
+        <iframe id="preview" src="/admin/preview?theme={{ s.theme }}"></iframe>
+        <div class="hint">L'aperçu du thème est instantané ; les autres champs s'appliquent après enregistrement.</div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+function selectTheme(key) {
+  document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+function refreshPreview(){
+  const checked = document.querySelector('input[name=theme]:checked');
+  const theme = checked ? checked.value : 'journal';
+  document.getElementById('preview').src = '/admin/preview?theme=' + theme + '&_=' + Date.now();
+}
+</script>
+</body>
+</html>
